@@ -133,7 +133,7 @@ Navigate to the `Projects` tab, and find this workshop project there - `cicd-wor
 
 First we will create a basic continuous integration pipeline, which will run your tests each time you commit some code. Run a commit for each instruction.
 
-- Run: `./scripts/do_0_start.sh` to create the environment.
+- Run: `./scripts/do_1_start.sh` to create the environment.
 - In the `.circleci/config.yaml` find the `jobs` section, and add a job called `build_and_test`:
 
 ```yaml
