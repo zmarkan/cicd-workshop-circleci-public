@@ -440,7 +440,7 @@ commands:
 ```
 
 - In app.terraform.io create a new organization, and give it a name. (If you just signed up, you should click "Start from Scratch" to create the organization.) 
-- Create a new workspace called `cicd-workshop-do` (Version Control Workflow > Github.com > Only select repos > cicd-workshop).
+- Create a new workspace called `cicd-workshop-do` (CLI-driven Workflow > Github.com > Only select repos > cicd-workshop).
 - In the workspace GUI, go to `Settings > General`, and make sure to switch the `Execution Mode` to `Local`.
 
 - In the file `terraform/do_create_k8s/main.tf` locate the `backend "remote"` section and make sure to change the name to your organization:
@@ -478,10 +478,10 @@ Add a job to create a Terraform cluster
             command: |
               export CLUSTER_NAME=${CIRCLE_PROJECT_REPONAME}
               export DO_K8S_SLUG_VER="$(doctl kubernetes options versions \
-                -o json -t $DIGITAL_OCEAN_TOKEN | jq -r '.[0] | .slug')"
+                -o json -t $DIGITALOCEAN_TOKEN | jq -r '.[0] | .slug')"
 
               terraform -chdir=./terraform/do_create_k8s apply \
-                -var do_token=$DIGITAL_OCEAN_TOKEN \
+                -var do_token=$DIGITALOCEAN_TOKEN \
                 -var cluster_name=$CLUSTER_NAME \
                 -var do_k8s_slug_ver=$DO_K8S_SLUG_VER \
                 -auto-approve
