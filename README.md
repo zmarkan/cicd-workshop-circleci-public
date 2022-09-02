@@ -914,7 +914,7 @@ workflows:
 
 This effectively lets us to route the workflow execution based on the pipeline parameter which is set.
 
-🎉 Contratulations, you have completed the chapter, and optimised your CI/CD pipeline further!
+🎉 Congratulations, you have completed the chapter, and optimised your CI/CD pipeline further!
 
 ## Chapter 4 - Dynamic Config
 
