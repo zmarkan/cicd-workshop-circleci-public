@@ -188,19 +188,19 @@ jobs:
     build_and_test:
     ...
     steps:
-        - checkout
-        - restore_cache:
-            key: v1-deps-{{ checksum "package-lock.json" }}
-        - run:
-            name: Install deps
-            command: npm install
-        - save_cache:
-            key: v1-deps-{{ checksum "package-lock.json" }}
-            paths: 
-                - node_modules   
-        - run:
-            name: Run tests
-            command: npm run test-ci
+      - checkout
+      - restore_cache:
+          key: v1-deps-{{ checksum "package-lock.json" }}
+      - run:
+          name: Install deps
+          command: npm install
+      - save_cache:
+          key: v1-deps-{{ checksum "package-lock.json" }}
+          paths: 
+              - node_modules   
+      - run:
+          name: Run tests
+          command: npm run test-ci
 
 ```
 
