@@ -206,7 +206,7 @@ jobs:
 
 ### Using the orb instead of installing and caching dependencies manually
 
-Now let's replace our existing process for dependency installation and running tests by using an orb - this saves you a lot of configuration and manages caching for you. Introduce the orb: 
+Now let's replace our existing process for dependency installation and running tests by using an orb - this saves you a lot of configuration and manages caching for you. Introduce [the Node orb](https://circleci.com/developer/orbs/orb/circleci/node): 
 
 ```yaml
 version: 2.1
