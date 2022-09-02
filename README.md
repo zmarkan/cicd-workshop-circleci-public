@@ -222,11 +222,11 @@ jobs:
   build_and_test:
     ...
     steps:
-        - checkout
-        - node/install-packages
-        - run:
-            name: Run tests
-            command: npm run test-ci
+      - checkout
+      - node/install-packages
+      - run:
+          name: Run tests
+          command: npm run test-ci
 ```
 
 ### Secrets and Contexts
