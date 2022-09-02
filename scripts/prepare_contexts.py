@@ -37,7 +37,7 @@ def add_circle_token_to_context(context_id, env_var_name, env_var_value):
 
 # First check whether the context named cicd-workshop
 contexts = circleci_api_request("GET", f'context?owner-id={CIRCLECI_ORG_ID}&owner-type=organization', None).get('items')
-context = next(ctx for ctx in contexts if ctx.get('name') == CIRCLECI_CONTEXT_NAME)
+context = next((ctx for ctx in contexts if ctx.get('name') == CIRCLECI_CONTEXT_NAME), None)
 
 if context == None:
   # Context doesn't exist so we create it   
