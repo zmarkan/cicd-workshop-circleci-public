@@ -268,19 +268,19 @@ orbs:
 jobs:
 ...
   build_docker_image:
-      docker:
-        - image: cimg/base:stable
-      steps:
-        - checkout
-        - setup_remote_docker:
-            docker_layer_caching: false
-        - docker/check
-        - docker/build:
-            image: $DOCKER_LOGIN/$CIRCLE_PROJECT_REPONAME
-            tag: 0.1.<< pipeline.number >>
-        - docker/push:
-            image: $DOCKER_LOGIN/$CIRCLE_PROJECT_REPONAME
-            tag: 0.1.<< pipeline.number >>
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: false
+      - docker/check
+      - docker/build:
+          image: $DOCKER_LOGIN/$CIRCLE_PROJECT_REPONAME
+          tag: 0.1.<< pipeline.number >>
+      - docker/push:
+          image: $DOCKER_LOGIN/$CIRCLE_PROJECT_REPONAME
+          tag: 0.1.<< pipeline.number >>
 ```
 
 In the workflow, add the deployment job:
@@ -300,11 +300,11 @@ Add the context we created earlier:
 ```yaml
 workflows:
   test_scan_deploy:
-      jobs:
-        - build_and_test
-        - build_docker_image:
-            context:
-              - cicd-workshop
+    jobs:
+      - build_and_test
+      - build_docker_image:
+          context:
+            - cicd-workshop
 ```
 
 This runs both jobs in parallel. We might want to run them sequentially instead, so Docker deployment only happens when the tests have passed. Do this by adding a `requires` stanza to the `build_docker_image` job:
@@ -312,13 +312,13 @@ This runs both jobs in parallel. We might want to run them sequentially instead,
 ```yaml
 workflows:
   test_scan_deploy:
-      jobs:
-        - build_and_test
-        - build_docker_image:
-            context:
-              - cicd-workshop
-            requires:
-              - build_and_test
+    jobs:
+      - build_and_test
+      - build_docker_image:
+          context:
+            - cicd-workshop
+          requires:
+            - build_and_test
 ```
 
 🎉 Congratulations, you've completed the first part of the exercise!
@@ -365,14 +365,14 @@ jobs:
 ```yaml
 workflows:
   test_scan_deploy:
-      jobs:
-        - build_and_test
-        - dependency_vulnerability_scan:
-            context:
-              - cicd-workshop
-        - build_docker_image:
-            context:
-              - cicd-workshop
+    jobs:
+      - build_and_test
+      - dependency_vulnerability_scan:
+          context:
+            - cicd-workshop
+      - build_docker_image:
+          context:
+            - cicd-workshop
 ```
 
 - This will now run the automated security scan for your dependencies and fail your job if any of them have known vulnerabilities. Now let's add the security scan to our Docker image build job as well:
@@ -493,21 +493,21 @@ Add the new job to the workflow. Add `requires` statements to only start deploym
 ```yaml
 workflows:
   test_scan_deploy:
-      jobs:
-        - build_and_test
-        - dependency_vulnerability_scan:
-            context:
-              - cicd-workshop
-        - build_docker_image:
-            context:
-              - cicd-workshop
-        - create_do_k8s_cluster:
-            requires:
-              - dependency_vulnerability_scan
-              - build_docker_image
-              - build_and_test
-            context:
-              - cicd-workshop
+    jobs:
+      - build_and_test
+      - dependency_vulnerability_scan:
+          context:
+            - cicd-workshop
+      - build_docker_image:
+          context:
+            - cicd-workshop
+      - create_do_k8s_cluster:
+          requires:
+            - dependency_vulnerability_scan
+            - build_docker_image
+            - build_and_test
+          context:
+            - cicd-workshop
             
 ```
 
@@ -534,44 +534,44 @@ Add a job `deploy_to_k8s` which will perform the deployment:
 ```yaml
 
 deploy_to_k8s:
-    docker:
-      - image: cimg/node:14.16.0
-    steps:
-      - checkout
-      - install_doctl:
-          version: "1.78.0"
-      - run:
-          name: Create .terraformrc file locally
-          command: echo "credentials \"app.terraform.io\" {token = \"$TF_CLOUD_KEY\"}" > $HOME/.terraformrc
-      - terraform/install:
-          terraform_version: "1.0.6"
-          arch: "amd64"
-          os: "linux"
-      - terraform/init:
-          path: ./terraform/do_k8s_deploy_app
-      - run:
-          name: Deploy Application to K8s on DigitalOcean
-          command: |
-            export CLUSTER_NAME=${CIRCLE_PROJECT_REPONAME}
-            export TAG=0.1.<< pipeline.number >>
-            export DOCKER_IMAGE="${DOCKER_LOGIN}/${CIRCLE_PROJECT_REPONAME}:$TAG"
-            doctl auth init -t $DIGITALOCEAN_TOKEN
-            doctl kubernetes cluster kubeconfig save $CLUSTER_NAME
+  docker:
+    - image: cimg/node:14.16.0
+  steps:
+    - checkout
+    - install_doctl:
+        version: "1.78.0"
+    - run:
+        name: Create .terraformrc file locally
+        command: echo "credentials \"app.terraform.io\" {token = \"$TF_CLOUD_KEY\"}" > $HOME/.terraformrc
+    - terraform/install:
+        terraform_version: "1.0.6"
+        arch: "amd64"
+        os: "linux"
+    - terraform/init:
+        path: ./terraform/do_k8s_deploy_app
+    - run:
+        name: Deploy Application to K8s on DigitalOcean
+        command: |
+          export CLUSTER_NAME=${CIRCLE_PROJECT_REPONAME}
+          export TAG=0.1.<< pipeline.number >>
+          export DOCKER_IMAGE="${DOCKER_LOGIN}/${CIRCLE_PROJECT_REPONAME}:$TAG"
+          doctl auth init -t $DIGITALOCEAN_TOKEN
+          doctl kubernetes cluster kubeconfig save $CLUSTER_NAME
 
-            terraform -chdir=./terraform/do_k8s_deploy_app apply \
-              -var do_token=$DIGITALOCEAN_TOKEN \
-              -var cluster_name=$CLUSTER_NAME \
-              -var docker_image=$DOCKER_IMAGE \
-              -auto-approve
+          terraform -chdir=./terraform/do_k8s_deploy_app apply \
+            -var do_token=$DIGITALOCEAN_TOKEN \
+            -var cluster_name=$CLUSTER_NAME \
+            -var docker_image=$DOCKER_IMAGE \
+            -auto-approve
 
-            # Save the Load Balancer Public IP Address
-            export ENDPOINT="$(terraform -chdir=./terraform/do_k8s_deploy_app output lb_public_ip)"
-            mkdir -p /tmp/do_k8s/
-            echo 'export ENDPOINT='${ENDPOINT} > /tmp/do_k8s/dok8s-endpoint
-      - persist_to_workspace:
-          root: /tmp/do_k8s/
-          paths:
-            - "*"
+          # Save the Load Balancer Public IP Address
+          export ENDPOINT="$(terraform -chdir=./terraform/do_k8s_deploy_app output lb_public_ip)"
+          mkdir -p /tmp/do_k8s/
+          echo 'export ENDPOINT='${ENDPOINT} > /tmp/do_k8s/dok8s-endpoint
+    - persist_to_workspace:
+        root: /tmp/do_k8s/
+        paths:
+          - "*"
 
 ```
 
@@ -619,28 +619,28 @@ workflows:
 
 workflows:
   test_scan_deploy:
-      jobs:
-        - build_and_test
-        - dependency_vulnerability_scan:
-            context:
-              - cicd-workshop
-        - build_docker_image:
-            context:
-              - cicd-workshop
-        - create_do_k8s_cluster:
-            context:
-              - cicd-workshop
-        - deploy_to_k8s:
-            requires:
-              - dependency_vulnerability_scan
-              - build_docker_image
-              - build_and_test
-              - create_do_k8s_cluster
-            context:
-              - cicd-workshop
-        - smoketest_k8s_deployment:
-            requires:
-              - deploy_to_k8s
+    jobs:
+      - build_and_test
+      - dependency_vulnerability_scan:
+          context:
+            - cicd-workshop
+      - build_docker_image:
+          context:
+            - cicd-workshop
+      - create_do_k8s_cluster:
+          context:
+            - cicd-workshop
+      - deploy_to_k8s:
+          requires:
+            - dependency_vulnerability_scan
+            - build_docker_image
+            - build_and_test
+            - create_do_k8s_cluster
+          context:
+            - cicd-workshop
+      - smoketest_k8s_deployment:
+          requires:
+            - deploy_to_k8s
 
 ```
 
@@ -652,50 +652,50 @@ The last step of this chapter is to tear down the infrastructure we provisioned,
 
 ```yaml
 destroy_k8s_cluster:
-    docker:
-      - image: cimg/base:stable
-    steps:
-      - checkout
-      - install_doctl:
-          version: "1.78.0"
-      - run:
-          name: Create .terraformrc file locally
-          command: echo "credentials \"app.terraform.io\" {token = \"$TF_CLOUD_KEY\"}" > $HOME/.terraformrc && cat $HOME/.terraformrc
-      - terraform/install:
-          terraform_version: "1.0.6"
-          arch: "amd64"
-          os: "linux"
-      - terraform/init:
-          path: ./terraform/do_k8s_deploy_app/
-      - run:
-          name: Destroy App Deployment
-          command: |
-            export CLUSTER_NAME=${CIRCLE_PROJECT_REPONAME}
-            export TAG=0.1.<< pipeline.number >>
-            export DOCKER_IMAGE="${DOCKER_LOGIN}/${CIRCLE_PROJECT_REPONAME}:$TAG"          
-            doctl auth init -t $DIGITALOCEAN_TOKEN
-            doctl kubernetes cluster kubeconfig save $CLUSTER_NAME
+  docker:
+    - image: cimg/base:stable
+  steps:
+    - checkout
+    - install_doctl:
+        version: "1.78.0"
+    - run:
+        name: Create .terraformrc file locally
+        command: echo "credentials \"app.terraform.io\" {token = \"$TF_CLOUD_KEY\"}" > $HOME/.terraformrc && cat $HOME/.terraformrc
+    - terraform/install:
+        terraform_version: "1.0.6"
+        arch: "amd64"
+        os: "linux"
+    - terraform/init:
+        path: ./terraform/do_k8s_deploy_app/
+    - run:
+        name: Destroy App Deployment
+        command: |
+          export CLUSTER_NAME=${CIRCLE_PROJECT_REPONAME}
+          export TAG=0.1.<< pipeline.number >>
+          export DOCKER_IMAGE="${DOCKER_LOGIN}/${CIRCLE_PROJECT_REPONAME}:$TAG"          
+          doctl auth init -t $DIGITALOCEAN_TOKEN
+          doctl kubernetes cluster kubeconfig save $CLUSTER_NAME
 
-            terraform -chdir=./terraform/do_k8s_deploy_app/ apply -destroy \
-              -var do_token=$DIGITALOCEAN_TOKEN \
-              -var cluster_name=$CLUSTER_NAME \
-              -var docker_image=$DOCKER_IMAGE \
-              -auto-approve
+          terraform -chdir=./terraform/do_k8s_deploy_app/ apply -destroy \
+            -var do_token=$DIGITALOCEAN_TOKEN \
+            -var cluster_name=$CLUSTER_NAME \
+            -var docker_image=$DOCKER_IMAGE \
+            -auto-approve
 
-      - terraform/init:
-          path: ./terraform/do_create_k8s
-      - run:
-          name: Destroy K8s Cluster
-          command: |
-            export CLUSTER_NAME=${CIRCLE_PROJECT_REPONAME}
-            export DO_K8S_SLUG_VER="$(doctl kubernetes options versions \
-              -o json -t $DIGITALOCEAN_TOKEN | jq -r '.[0] | .slug')"
+    - terraform/init:
+        path: ./terraform/do_create_k8s
+    - run:
+        name: Destroy K8s Cluster
+        command: |
+          export CLUSTER_NAME=${CIRCLE_PROJECT_REPONAME}
+          export DO_K8S_SLUG_VER="$(doctl kubernetes options versions \
+            -o json -t $DIGITALOCEAN_TOKEN | jq -r '.[0] | .slug')"
 
-            terraform -chdir=./terraform/do_create_k8s apply -destroy \
-              -var do_token=$DIGITALOCEAN_TOKEN \
-              -var cluster_name=$CLUSTER_NAME \
-              -var do_k8s_slug_ver=$DO_K8S_SLUG_VER \
-              -auto-approve
+          terraform -chdir=./terraform/do_create_k8s apply -destroy \
+            -var do_token=$DIGITALOCEAN_TOKEN \
+            -var cluster_name=$CLUSTER_NAME \
+            -var do_k8s_slug_ver=$DO_K8S_SLUG_VER \
+            -auto-approve
 ```
 
 This runs two Terraform steps - with the, running `apply -destroy` which basically undoes them. First the deployment, and then the underlying infrastructure.
@@ -705,37 +705,37 @@ This runs two Terraform steps - with the, running `apply -destroy` which basical
 ```yaml
 workflows:
   test_scan_deploy:
-      jobs:
-        - build_and_test
-        - dependency_vulnerability_scan:
-            context:
-              - cicd-workshop
-        - build_docker_image:
-            context:
-              - cicd-workshop
-        - create_do_k8s_cluster:
-            context:
-              - cicd-workshop
-        - deploy_to_k8s:
-            requires:
-              - dependency_vulnerability_scan
-              - build_docker_image
-              - build_and_test
-              - create_do_k8s_cluster
-            context:
-              - cicd-workshop
-        - smoketest_k8s_deployment:
-            requires:
-              - deploy_to_k8s
-        - approve_destroy:
-            type: approval
-            requires:
-              - smoketest_k8s_deployment
-        - destroy_k8s_cluster:
-            requires:
-              - approve_destroy
-            context:
-              - cicd-workshop
+    jobs:
+      - build_and_test
+      - dependency_vulnerability_scan:
+          context:
+            - cicd-workshop
+      - build_docker_image:
+          context:
+            - cicd-workshop
+      - create_do_k8s_cluster:
+          context:
+            - cicd-workshop
+      - deploy_to_k8s:
+          requires:
+            - dependency_vulnerability_scan
+            - build_docker_image
+            - build_and_test
+            - create_do_k8s_cluster
+          context:
+            - cicd-workshop
+      - smoketest_k8s_deployment:
+          requires:
+            - deploy_to_k8s
+      - approve_destroy:
+          type: approval
+          requires:
+            - smoketest_k8s_deployment
+      - destroy_k8s_cluster:
+          requires:
+            - approve_destroy
+          context:
+            - cicd-workshop
 ```
 
 The `approve_destroy` had a special type set - `approval` which means we don't have to define it and it will give us the option to manually confirm we want to continue executing the workflow.
