@@ -440,6 +440,7 @@ commands:
 ```
 
 - In app.terraform.io create a new organization, and give it a name. Create a new workspace called `cicd-workshop-do`. 
+If you just signed up, you should click "Start from Scratch" to create the organization.
 In the workspace GUI, go to `Settings`, and make sure to switch the `Execution Mode` to `Local`.
 
 - In the file `terraform/do_create_k8s/main.tf` locate the `backend "remote"` section and make sure to change the name to your organization:
