@@ -2,20 +2,24 @@
 
 ## Prerequisites
 
-Knowledge of Git version control system
-GitHub account - where the code is hosted
-A code editor - you can use GitPod ...
+1. Knowledge of the Git version control system ([Git Basics](https://www.freecodecamp.org/news/learn-the-basics-of-git-in-under-10-minutes-da548267cc91/))
+2. A code editor - you can use [GitPod](https://gitpod.io)
+3. Accounts on the following cloud services:
+- [GitHub](https://github.com/signup)
+- [DigitalOcean](https://github.com/circleci-public/cicd-workshop#digitalocean)
+- [Terraform Cloud](https://github.com/circleci-public/cicd-workshop#terraform-cloud)
+- [Docker Hub](https://github.com/circleci-public/cicd-workshop#docker-hub)
+- [Snyk](https://github.com/circleci-public/cicd-workshop#snyk)
 
 ## Chapter 0 - The Prologue and Prep
 
-Fork this project! You will need a GitHub account.
+[Fork this project!](https://github.com/CircleCI-Public/cicd-workshop/fork)! You will need a GitHub account.
 
-This project can run on your machine if you have the correct dependencies installed (Git, Terraform, DigitalOcean CLI, Node.js), or it can also run in a cloud based environment using Gitpod (we recommend Gitpod for best experience).
+This project can be run on your machine, if you have the correct dependencies installed (Git, Terraform, DigitalOcean CLI, Node.js), or it can also run in a cloud based environment using Gitpod (we recommend Gitpod for the best experience).
 
 To open this in Gitpod, copy your fork's GitHub URL, and combine it with this Gitpod prefix - `https://gitpod.io/#` and open it in a new tab.
 
 The full URL should look something like this: `https://gitpod.io/#/https://github.com/YOUR_GITHUB_USERNAME/cicd-workshop`.
-
 
 This lets you spin up an environment with all the dependencies preinstalled, remotely connect to it, and work on it as it was on your machine. This is much faster, believe us, we measured it with science. 
 
@@ -37,32 +41,44 @@ If you don't do this, you'll have a bad time.
 
 #### DigitalOcean
 
-- Create an account with DigitalOcean - https://cloud.digitalocean.com/ We will use DigitalOcean to deploy our application to. 
+- Create an account with DigitalOcean - https://cloud.digitalocean.com/. We will use DigitalOcean to deploy our application to. You can use the code **`CircleCI`** to receive $100 in credits for new accounts (or those not having previously used credits). ***Note: These credits will expire 90 days after first use.***
 - Go to API (left)
 - Generate New Token with read and write access
-- copy the token string to `credentials.toml` - `digitalocean_token`
- 
+- Replace `"YOUR_DIGITALOCEAN_TOKEN"` with the generated new token in `credentials.toml`
+```
+digitalocean_token = "YOUR_DIGITALOCEAN_TOKEN"
+```
+
 #### Terraform Cloud
 
 - Create an account with Hashicorp Terraform - https://app.terraform.io/ We will use Terraform to provision our infrastructure on Digital Ocean.
 - Got to your user settings (top right), and select Tokens
 - Create an API token 
-- Copy the token string to `credentials.toml` - `tf_cloud_key`
+- Replace `"YOUR_TERRAFORM_CLOUD_KEY"` with the generated API token in `credentials.toml`
+```
+tf_cloud_key = "YOUR_TERRAFORM_CLOUD_KEY"
+```
 
 #### Docker Hub
 
 - Create an account with Docker Hub - https://hub.docker.com/ We will use Docker Hub as a repository for our app images.
 - Go to your user settings (top right), and select Security
 - Create New Access Token
-- copy your username to `credentials.toml` - `docker_username`
-- copy your token string to `credentials.toml` - `docker_token`
+- Replace `"YOUR_DOCKER_USERNAME"` and `"YOUR_DOCKER_TOKEN"` with your Docker username and generated new token string, respectively, in `credentials.toml`
+```
+docker_login = "YOUR_DOCKER_USERNAME"
+docker_token = "YOUR_DOCKER_TOKEN"
+```
 
 #### Snyk
 
 - Create an account with Snyk - https://app.snyk.io/ - We will use Snyk to run an automated security scan of our application an its dependencies. 
 - Go to your Account settings (top right)
 - Click to show Auth Token 
-- Copy your token string to `credentials.toml` - `snyk_token`
+- Replace `"YOUR_SNYK_TOKEN"` with your auth token string to `credentials.toml`
+```
+snyk_token = "YOUR_SNYK_TOKEN"
+```
 
 ### How this workshop works
 
