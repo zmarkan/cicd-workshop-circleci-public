@@ -41,7 +41,7 @@ If you don't do this, you'll have a bad time.
 
 #### DigitalOcean
 
-- Create an account with DigitalOcean - https://cloud.digitalocean.com/. We will use DigitalOcean to deploy our application to. You can use the code **`CircleCI`** to receive $100 in credits for new accounts (or those not having previously used credits). ***Note: These credits will expire 90 days after first use.***
+- Create an account with DigitalOcean - https://cloud.digitalocean.com/. We will use DigitalOcean to deploy our application to. You can use the code provided in the workshop to receive $100 in credits for new accounts (or those not having previously used credits). ***Note: These credits will expire 90 days after first use.***
 - Go to API (left)
 - Generate New Token with read and write access
 - Replace `"YOUR_DIGITALOCEAN_TOKEN"` with the generated new token in `credentials.toml`
