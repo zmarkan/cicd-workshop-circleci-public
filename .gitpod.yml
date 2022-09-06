@@ -19,7 +19,7 @@ tasks:
   - name: Check if SSH env vars exist and set them
     command: |
       echo "check for ssh key env var"
-      if [ -z ${github_ssh_key+x} ]; 
+      if [ -z ${github_ssh_key_base64+x} ]; 
         then
           echo "ssh key does not exist"
           # var does not exist 
